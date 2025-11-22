@@ -4,6 +4,7 @@ Standalone script to run the US Recession 2025 forecast model.
 
 This script can be run directly without starting the web interface:
     python forecasts/us_recession_2025/run_forecast.py
+    python forecasts/us_recession_2025/run_forecast.py --version v2
 
 Or as a module:
     python -m forecasts.us_recession_2025.run_forecast
@@ -17,6 +18,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from forecasts.us_recession_2025.model import RecessionModel
+from forecasts.us_recession_2025.model_v2 import RecessionModelV2
 from forecasts.us_recession_2025.config import DEFAULT_PARAMS, PARAMETER_SCHEMAS
 from lib.database import get_forecast_history
 
@@ -32,22 +34,26 @@ def print_section(title):
     print("-" * len(title))
 
 
-def run_forecast(show_history=True, history_limit=10):
+def run_forecast(show_history=True, history_limit=10, version='v1'):
     """
     Run the US Recession 2025 forecast and display results.
     
     Args:
         show_history: Whether to display historical forecasts
         history_limit: Number of historical entries to show
+        version: Model version to use ('v1' or 'v2')
     """
     print_separator()
-    print("US RECESSION 2025 FORECAST")
+    print(f"US RECESSION 2025 FORECAST ({version.upper()})")
     print_separator()
     
     # Initialize model
     print("\nInitializing model...")
     try:
-        model = RecessionModel()
+        if version == 'v2':
+            model = RecessionModelV2()
+        else:
+            model = RecessionModel()
         print(f"✓ Model: {model.get_name()}")
         print(f"  Description: {model.get_description()}")
     except Exception as e:
@@ -66,7 +72,22 @@ def run_forecast(show_history=True, history_limit=10):
     print("Fetching economic indicators and calculating probability...")
     
     try:
-        probability = model.calculate_probability()
+        if version == 'v2':
+            # V2 model returns adjusted probability by default
+            # For now, since v2 is not fully implemented, we'll show a placeholder
+            print("\n⚠ V2 model is not fully implemented yet.")
+            print("  The following features will be available once implementation is complete:")
+            print("  - Additional economic indicators (credit spreads, housing, manufacturing, etc.)")
+            print("  - Feature engineering (rate of change, moving averages, volatility)")
+            print("  - Temporal decay adjustment based on time remaining")
+            print("  - Detailed probability breakdown")
+            print("\n  For now, showing v1 calculation...")
+            # Fall back to v1 for now
+            v1_model = RecessionModel()
+            probability = v1_model.calculate_probability()
+            model = v1_model
+        else:
+            probability = model.calculate_probability()
         print(f"\n✓ Calculation successful!")
     except Exception as e:
         print(f"\n✗ Calculation failed: {e}")
@@ -78,6 +99,25 @@ def run_forecast(show_history=True, history_limit=10):
     print_section("Current Forecast Results")
     print(f"\n  RECESSION PROBABILITY: {probability * 100:.2f}%")
     print(f"  Last Updated: {model.get_last_updated().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Display V2-specific information if available
+    if version == 'v2' and hasattr(model, 'get_probability_breakdown'):
+        try:
+            breakdown = model.get_probability_breakdown()
+            if breakdown and 'base_probability' in breakdown:
+                print_section("V2 Enhanced Information")
+                print(f"\n  Base Probability: {breakdown['base_probability'] * 100:.2f}%")
+                print(f"  Adjusted Probability: {breakdown['adjusted_probability'] * 100:.2f}%")
+                print(f"  Days Remaining: {breakdown.get('days_remaining', 'N/A')}")
+                
+                if 'temporal_metadata' in breakdown:
+                    meta = breakdown['temporal_metadata']
+                    print(f"\n  Temporal Adjustment:")
+                    print(f"    Method: {meta.get('decay_method', 'N/A')}")
+                    print(f"    Decay Rate: {meta.get('decay_rate', 'N/A')}")
+                    print(f"    Threshold Applied: {meta.get('threshold_applied', 'N/A')}")
+        except Exception as e:
+            print(f"\n  (V2 breakdown not available: {e})")
     
     # Display indicator values
     if model._last_indicators:
@@ -106,32 +146,63 @@ def run_forecast(show_history=True, history_limit=10):
     if show_history:
         print_section(f"Historical Forecasts (Last {history_limit})")
         try:
-            history = get_forecast_history('us_recession_2025', limit=history_limit)
+            # Use appropriate table name based on version
+            table_name = 'us_recession_2025_v2' if version == 'v2' else 'us_recession_2025'
+            history = get_forecast_history(table_name, limit=history_limit)
             
             if history and len(history) > 0:
-                print(f"\n  {'Date':<20} {'Probability':<15} {'Trend'}")
-                print("  " + "-" * 50)
-                
-                prev_prob = None
-                for entry in history:
-                    date_str = entry['calculated_at'][:19]  # Remove microseconds
-                    prob = entry['probability']
-                    prob_str = f"{prob * 100:.2f}%"
+                if version == 'v2':
+                    # V2 shows both base and adjusted probabilities
+                    print(f"\n  {'Date':<20} {'Base':<12} {'Adjusted':<12} {'Trend'}")
+                    print("  " + "-" * 60)
                     
-                    # Calculate trend
-                    if prev_prob is not None:
-                        diff = prob - prev_prob
-                        if abs(diff) < 0.001:
-                            trend = "→ (no change)"
-                        elif diff > 0:
-                            trend = f"↑ (+{diff * 100:.2f}%)"
+                    prev_prob = None
+                    for entry in history:
+                        date_str = entry['calculated_at'][:19]  # Remove microseconds
+                        base_prob = entry.get('base_probability', entry.get('probability', 0))
+                        adj_prob = entry.get('adjusted_probability', base_prob)
+                        base_str = f"{base_prob * 100:.2f}%"
+                        adj_str = f"{adj_prob * 100:.2f}%"
+                        
+                        # Calculate trend based on adjusted probability
+                        if prev_prob is not None:
+                            diff = adj_prob - prev_prob
+                            if abs(diff) < 0.001:
+                                trend = "→"
+                            elif diff > 0:
+                                trend = f"↑ +{diff * 100:.2f}%"
+                            else:
+                                trend = f"↓ {diff * 100:.2f}%"
                         else:
-                            trend = f"↓ ({diff * 100:.2f}%)"
-                    else:
-                        trend = ""
+                            trend = ""
+                        
+                        print(f"  {date_str:<20} {base_str:<12} {adj_str:<12} {trend}")
+                        prev_prob = adj_prob
+                else:
+                    # V1 shows single probability
+                    print(f"\n  {'Date':<20} {'Probability':<15} {'Trend'}")
+                    print("  " + "-" * 50)
                     
-                    print(f"  {date_str:<20} {prob_str:<15} {trend}")
-                    prev_prob = prob
+                    prev_prob = None
+                    for entry in history:
+                        date_str = entry['calculated_at'][:19]  # Remove microseconds
+                        prob = entry['probability']
+                        prob_str = f"{prob * 100:.2f}%"
+                        
+                        # Calculate trend
+                        if prev_prob is not None:
+                            diff = prob - prev_prob
+                            if abs(diff) < 0.001:
+                                trend = "→ (no change)"
+                            elif diff > 0:
+                                trend = f"↑ (+{diff * 100:.2f}%)"
+                            else:
+                                trend = f"↓ ({diff * 100:.2f}%)"
+                        else:
+                            trend = ""
+                        
+                        print(f"  {date_str:<20} {prob_str:<15} {trend}")
+                        prev_prob = prob
             else:
                 print("  No historical data available yet.")
         except Exception as e:
@@ -168,10 +239,28 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Run v1 model (default)
   python forecasts/us_recession_2025/run_forecast.py
+  
+  # Run v2 model with enhanced features
+  python forecasts/us_recession_2025/run_forecast.py --version v2
+  
+  # Run without history
   python forecasts/us_recession_2025/run_forecast.py --no-history
+  
+  # Show more historical entries
   python forecasts/us_recession_2025/run_forecast.py --history-limit 20
+  
+  # Combine options
+  python forecasts/us_recession_2025/run_forecast.py --version v2 --history-limit 5
         """
+    )
+    
+    parser.add_argument(
+        '--version',
+        choices=['v1', 'v2'],
+        default='v1',
+        help='Model version to use (default: v1)'
     )
     
     parser.add_argument(
@@ -191,7 +280,8 @@ Examples:
     
     success = run_forecast(
         show_history=not args.no_history,
-        history_limit=args.history_limit
+        history_limit=args.history_limit,
+        version=args.version
     )
     
     sys.exit(0 if success else 1)
