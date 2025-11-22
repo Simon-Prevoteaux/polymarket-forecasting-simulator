@@ -6,20 +6,20 @@
   - Update __init__.py to export v2 classes
   - _Requirements: All_
 
-- [ ] 2. Implement enhanced data fetcher (data_v2.py)
-  - [ ] 2.1 Add new FRED indicator series IDs to configuration
+- [x] 2. Implement enhanced data fetcher (data_v2.py)
+  - [x] 2.1 Add new FRED indicator series IDs to configuration
     - Add BAA10Y (credit spread), HOUST (housing starts), NAPM (manufacturing PMI)
     - Add RSXFS (retail sales), DCOILWTICO (oil prices), VIXCLS (VIX)
     - _Requirements: 3.1_
   
-  - [ ] 2.2 Implement fetch_economic_indicators_v2 function
+  - [x] 2.2 Implement fetch_economic_indicators_v2 function
     - Add as_of_date parameter for historical data fetching
     - Fetch all v1 indicators plus new v2 indicators
     - Handle missing indicators with neutral defaults
     - Return enhanced data structure with all indicators
     - _Requirements: 1.1, 3.1, 3.5_
   
-  - [ ]* 2.3 Write property test for historical data temporal consistency
+  - [x] 2.3 Write property test for historical data temporal consistency
     - **Property 1: Historical data retrieval preserves temporal consistency**
     - **Validates: Requirements 1.1**
   
@@ -29,15 +29,15 @@
     - Mock FRED API responses
     - _Requirements: 3.1, 3.5_
 
-- [ ] 3. Implement feature engineering module (features.py)
-  - [ ] 3.1 Create FeatureEngineer class
+- [x] 3. Implement feature engineering module (features.py)
+  - [x] 3.1 Create FeatureEngineer class
     - Implement calculate_rate_of_change method (30d, 90d, 180d periods)
     - Implement calculate_moving_averages method (30d, 90d windows)
     - Implement calculate_volatility method (30d rolling std dev)
     - Implement engineer_features method to generate all features
     - _Requirements: 3.2, 3.3_
   
-  - [ ] 3.2 Add missing data handling in feature calculations
+  - [x] 3.2 Add missing data handling in feature calculations
     - Forward-fill for gaps in time series
     - Skip features with insufficient data
     - Return None for uncalculable features
@@ -62,25 +62,25 @@
     - Test edge cases (single observation, all zeros)
     - _Requirements: 3.2, 3.3_
 
-- [ ] 4. Implement temporal decay module (temporal.py)
-  - [ ] 4.1 Implement time-to-event calculation
+- [x] 4. Implement temporal decay module (temporal.py)
+  - [x] 4.1 Implement time-to-event calculation
     - Create calculate_time_to_event function
     - Handle edge cases (past deadline, invalid dates)
     - _Requirements: 4.1_
   
-  - [ ] 4.2 Implement exponential decay function
+  - [x] 4.2 Implement exponential decay function
     - Create exponential_decay_adjustment function
     - Apply decay only below threshold
     - Use exponential formula with configurable decay rate
     - _Requirements: 4.2, 4.4_
   
-  - [ ] 4.3 Implement sigmoid decay function
+  - [x] 4.3 Implement sigmoid decay function
     - Create sigmoid_decay_adjustment function
     - Use sigmoid centered at midpoint
     - Configurable steepness parameter
     - _Requirements: 4.2, 4.4_
   
-  - [ ] 4.4 Create TemporalAdjuster class
+  - [x] 4.4 Create TemporalAdjuster class
     - Initialize with decay method and parameters
     - Implement adjust_probability method
     - Return adjusted probability and metadata
@@ -110,28 +110,28 @@
     - Test parameter validation
     - _Requirements: 4.2, 4.4, 4.6, 4.7_
 
-- [ ] 5. Implement backtesting engine (backtesting.py)
-  - [ ] 5.1 Create backtesting database schema
+- [x] 5. Implement backtesting engine (backtesting.py)
+  - [x] 5.1 Create backtesting database schema
     - Create forecast_us_recession_2025_backtest table
     - Add indexes for backtest_date and model_version
     - Add unique constraint on (backtest_date, model_version)
     - _Requirements: 6.1, 6.4_
   
-  - [ ] 5.2 Implement BacktestEngine class
+  - [x] 5.2 Implement BacktestEngine class
     - Create __init__ with model_version parameter
     - Implement run_backtest method (daily/weekly/monthly frequency)
     - Fetch historical data for each backtest date
     - Run model and store results
     - _Requirements: 1.2, 1.3_
   
-  - [ ] 5.3 Implement performance metrics calculation
+  - [x] 5.3 Implement performance metrics calculation
     - Create calculate_performance_metrics method
     - Calculate Brier score
     - Calculate calibration statistics
     - Calculate discrimination metrics (AUC-ROC if applicable)
     - _Requirements: 1.5_
   
-  - [ ] 5.4 Implement model comparison functionality
+  - [x] 5.4 Implement model comparison functionality
     - Create compare_models method
     - Compare v1 vs v2 performance
     - Calculate relative metrics
