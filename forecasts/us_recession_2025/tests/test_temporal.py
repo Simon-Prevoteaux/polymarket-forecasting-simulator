@@ -1,15 +1,30 @@
 """
 Unit tests for temporal decay module
+
+DEPRECATED: These tests are for the old forecasts/us_recession_2025/temporal.py module
+which has been replaced by lib.temporal_adjustment.
+
+The old temporal.py file has been deleted. These tests are kept for reference but many
+will fail because the new library has different APIs.
+
+For testing the new library, see:
+- demo_temporal_adjustment_methods.py
+- lib/temporal_adjustment.py (has built-in validation)
+
+To run the new library demo:
+    python demo_temporal_adjustment_methods.py
 """
 
 import pytest
 from datetime import datetime
 import math
 
-from forecasts.us_recession_2025.temporal import (
+# Now using the new generic library
+from lib.temporal_adjustment import (
     calculate_time_to_event,
-    exponential_decay_adjustment,
-    sigmoid_decay_adjustment,
+    threshold_aware_decay as exponential_decay_adjustment,  # Old name mapped to new
+    trend_amplification as sigmoid_decay_adjustment,  # Old name mapped to new
+    theta_decay,
     TemporalAdjuster
 )
 
@@ -178,6 +193,102 @@ class TestSigmoidDecayAdjustment:
             sigmoid_decay_adjustment(0.5, 100, steepness=0)
 
 
+class TestThetaDecayAdjustment:
+    """Tests for theta_decay_adjustment function"""
+    
+    def test_basic_theta_adjustment(self):
+        """Test basic theta adjustment"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        base_prob = 0.5
+        days_remaining = 180
+        
+        adjusted = theta_decay_adjustment(base_prob, days_remaining, total_days=365, decay_power=2.0)
+        
+        # Should be less than base probability
+        assert adjusted < base_prob
+        assert 0 <= adjusted <= 1
+    
+    def test_theta_no_decay_at_start(self):
+        """Test that theta has no decay when far from deadline"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        base_prob = 0.5
+        days_remaining = 365
+        
+        adjusted = theta_decay_adjustment(base_prob, days_remaining, total_days=365, decay_power=2.0)
+        
+        # Should be equal to base probability
+        assert adjusted == base_prob
+    
+    def test_theta_maximum_decay_at_deadline(self):
+        """Test that theta has maximum decay at deadline"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        base_prob = 0.5
+        days_remaining = 0
+        
+        adjusted = theta_decay_adjustment(base_prob, days_remaining, total_days=365, decay_power=2.0)
+        
+        # Should be very close to zero
+        assert adjusted < 0.01
+    
+    def test_theta_accelerating_decay(self):
+        """Test that theta decay is monotonically decreasing"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        base_prob = 0.5
+        
+        adjusted_300 = theta_decay_adjustment(base_prob, 300, total_days=365, decay_power=2.0)
+        adjusted_200 = theta_decay_adjustment(base_prob, 200, total_days=365, decay_power=2.0)
+        adjusted_100 = theta_decay_adjustment(base_prob, 100, total_days=365, decay_power=2.0)
+        
+        # Probability should decrease monotonically as deadline approaches
+        assert adjusted_300 > adjusted_200 > adjusted_100
+        
+        # All should be less than base probability
+        assert adjusted_300 < base_prob
+        assert adjusted_200 < base_prob
+        assert adjusted_100 < base_prob
+    
+    def test_theta_no_threshold(self):
+        """Test that theta applies to all probabilities (no threshold)"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        days_remaining = 100
+        
+        # Test with low and high probabilities
+        low_prob = 0.2
+        high_prob = 0.8
+        
+        adjusted_low = theta_decay_adjustment(low_prob, days_remaining, total_days=365, decay_power=2.0)
+        adjusted_high = theta_decay_adjustment(high_prob, days_remaining, total_days=365, decay_power=2.0)
+        
+        # Both should be decayed
+        assert adjusted_low < low_prob
+        assert adjusted_high < high_prob
+    
+    def test_theta_invalid_probability_raises_error(self):
+        """Test that invalid probability raises ValueError"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        with pytest.raises(ValueError):
+            theta_decay_adjustment(1.5, 100)
+        
+        with pytest.raises(ValueError):
+            theta_decay_adjustment(-0.1, 100)
+    
+    def test_theta_invalid_decay_power_raises_error(self):
+        """Test that invalid decay power raises ValueError"""
+        theta_decay_adjustment = theta_decay  # Use the imported function
+        
+        with pytest.raises(ValueError):
+            theta_decay_adjustment(0.5, 100, decay_power=0)
+        
+        with pytest.raises(ValueError):
+            theta_decay_adjustment(0.5, 100, decay_power=-1.0)
+
+
 class TestTemporalAdjuster:
     """Tests for TemporalAdjuster class"""
     
@@ -262,6 +373,37 @@ class TestTemporalAdjuster:
         # Should be unchanged
         assert adjusted_prob == base_prob
         assert metadata['threshold_applied'] == False
+    
+    def test_theta_initialization(self):
+        """Test initialization with theta method"""
+        adjuster = TemporalAdjuster(method='theta', total_days=365, decay_power=2.0)
+        assert adjuster.method == 'theta'
+        assert adjuster.total_days == 365
+        assert adjuster.decay_power == 2.0
+    
+    def test_theta_default_parameters(self):
+        """Test theta method with default parameters"""
+        adjuster = TemporalAdjuster(method='theta')
+        assert adjuster.total_days == 365
+        assert adjuster.decay_power == 1.5
+    
+    def test_adjust_probability_theta(self):
+        """Test adjust_probability with theta method"""
+        adjuster = TemporalAdjuster(method='theta', total_days=365, decay_power=2.0)
+        base_prob = 0.5
+        current_date = datetime(2025, 10, 1)
+        deadline = datetime(2025, 12, 31)
+        
+        adjusted_prob, metadata = adjuster.adjust_probability(base_prob, current_date, deadline)
+        
+        # Check adjusted probability is valid
+        assert 0 <= adjusted_prob <= 1
+        assert adjusted_prob < base_prob  # Should be reduced
+        
+        # Check metadata
+        assert metadata['decay_method'] == 'theta'
+        assert 'adjustment_factor' in metadata
+        assert metadata['adjustment_factor'] < 1.0
     
     def test_calibrate_from_historical_data(self):
         """Test calibrate_from_historical_data method"""

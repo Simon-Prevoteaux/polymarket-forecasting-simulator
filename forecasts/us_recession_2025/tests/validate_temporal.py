@@ -12,10 +12,11 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from datetime import datetime, timedelta
-from forecasts.us_recession_2025.temporal import (
+# Now using the new generic library
+from lib.temporal_adjustment import (
     calculate_time_to_event,
-    exponential_decay_adjustment,
-    sigmoid_decay_adjustment,
+    threshold_aware_decay as exponential_decay_adjustment,
+    trend_amplification as sigmoid_decay_adjustment,
     TemporalAdjuster
 )
 

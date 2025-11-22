@@ -65,29 +65,22 @@ def run_forecast(show_history=True, history_limit=10, version='v1'):
     params = model.get_parameters()
     for param_name, param_info in params.items():
         print(f"  {param_info['description']}")
-        print(f"    Default: {param_info['default']} (range: {param_info['min_value']} - {param_info['max_value']})")
+        # Handle different parameter formats (v1 vs v2)
+        if 'min_value' in param_info and 'max_value' in param_info:
+            print(f"    Default: {param_info['default']} (range: {param_info['min_value']} - {param_info['max_value']})")
+        elif 'min' in param_info and 'max' in param_info:
+            print(f"    Default: {param_info['default']} (range: {param_info['min']} - {param_info['max']})")
+        elif 'options' in param_info:
+            print(f"    Default: {param_info['default']} (options: {', '.join(param_info['options'])})")
+        else:
+            print(f"    Default: {param_info['default']}")
     
     # Calculate probability
     print_section("Calculating Forecast")
     print("Fetching economic indicators and calculating probability...")
     
     try:
-        if version == 'v2':
-            # V2 model returns adjusted probability by default
-            # For now, since v2 is not fully implemented, we'll show a placeholder
-            print("\n⚠ V2 model is not fully implemented yet.")
-            print("  The following features will be available once implementation is complete:")
-            print("  - Additional economic indicators (credit spreads, housing, manufacturing, etc.)")
-            print("  - Feature engineering (rate of change, moving averages, volatility)")
-            print("  - Temporal decay adjustment based on time remaining")
-            print("  - Detailed probability breakdown")
-            print("\n  For now, showing v1 calculation...")
-            # Fall back to v1 for now
-            v1_model = RecessionModel()
-            probability = v1_model.calculate_probability()
-            model = v1_model
-        else:
-            probability = model.calculate_probability()
+        probability = model.calculate_probability()
         print(f"\n✓ Calculation successful!")
     except Exception as e:
         print(f"\n✗ Calculation failed: {e}")
@@ -120,27 +113,84 @@ def run_forecast(show_history=True, history_limit=10, version='v1'):
             print(f"\n  (V2 breakdown not available: {e})")
     
     # Display indicator values
-    if model._last_indicators:
-        print_section("Economic Indicators")
+    indicators = None
+    timestamps = {}
+    
+    if version == 'v2' and hasattr(model, 'get_probability_breakdown'):
+        try:
+            breakdown = model.get_probability_breakdown()
+            indicators = breakdown.get('indicators', {})
+            timestamps = breakdown.get('timestamps', {})
+        except:
+            pass
+    elif hasattr(model, '_last_indicators') and model._last_indicators:
         indicators = model._last_indicators
+        timestamps = indicators.get('timestamps', {})
+    
+    if indicators:
+        print_section("Economic Indicators")
         
-        print(f"  Yield Curve (10Y-2Y): {indicators['yield_curve']:.2f}")
-        print(f"    Date: {indicators['timestamps']['yield_curve']}")
+        if 'yield_curve' in indicators:
+            print(f"  Yield Curve (10Y-2Y): {indicators['yield_curve']:.2f}")
+            if 'yield_curve' in timestamps:
+                print(f"    Date: {timestamps['yield_curve']}")
         
-        print(f"\n  Unemployment Rate: {indicators['unemployment']:.2f}%")
-        print(f"    Date: {indicators['timestamps']['unemployment']}")
+        if 'unemployment' in indicators:
+            print(f"\n  Unemployment Rate: {indicators['unemployment']:.2f}%")
+            if 'unemployment' in timestamps:
+                print(f"    Date: {timestamps['unemployment']}")
         
-        print(f"\n  GDP Growth: {indicators['gdp']:.2f}%")
-        print(f"    Date: {indicators['timestamps']['gdp']}")
+        if 'gdp' in indicators:
+            print(f"\n  GDP Growth: {indicators['gdp']:.2f}%")
+            if 'gdp' in timestamps:
+                print(f"    Date: {timestamps['gdp']}")
         
-        print(f"\n  Consumer Confidence: {indicators['consumer_confidence']:.2f}")
-        print(f"    Date: {indicators['timestamps']['consumer_confidence']}")
+        if 'consumer_confidence' in indicators:
+            print(f"\n  Consumer Confidence: {indicators['consumer_confidence']:.2f}")
+            if 'consumer_confidence' in timestamps:
+                print(f"    Date: {timestamps['consumer_confidence']}")
         
-        print(f"\n  Leading Indicators: {indicators['leading_indicators']:.2f}")
-        print(f"    Date: {indicators['timestamps']['leading_indicators']}")
+        if 'leading_indicators' in indicators:
+            print(f"\n  Leading Indicators: {indicators['leading_indicators']:.2f}")
+            if 'leading_indicators' in timestamps:
+                print(f"    Date: {timestamps['leading_indicators']}")
         
-        print(f"\n  Jobless Claims: {indicators['jobless_claims']:,.0f}")
-        print(f"    Date: {indicators['timestamps']['jobless_claims']}")
+        if 'jobless_claims' in indicators:
+            print(f"\n  Jobless Claims: {indicators['jobless_claims']:,.0f}")
+            if 'jobless_claims' in timestamps:
+                print(f"    Date: {timestamps['jobless_claims']}")
+        
+        # V2-specific indicators
+        if version == 'v2':
+            if 'credit_spread' in indicators:
+                print(f"\n  Credit Spread (BAA-10Y): {indicators['credit_spread']:.2f}")
+                if 'credit_spread' in timestamps:
+                    print(f"    Date: {timestamps['credit_spread']}")
+            
+            if 'housing_starts' in indicators:
+                print(f"\n  Housing Starts: {indicators['housing_starts']:,.0f}")
+                if 'housing_starts' in timestamps:
+                    print(f"    Date: {timestamps['housing_starts']}")
+            
+            if 'manufacturing_pmi' in indicators:
+                print(f"\n  Manufacturing PMI: {indicators['manufacturing_pmi']:.2f}")
+                if 'manufacturing_pmi' in timestamps:
+                    print(f"    Date: {timestamps['manufacturing_pmi']}")
+            
+            if 'retail_sales' in indicators:
+                print(f"\n  Retail Sales: {indicators['retail_sales']:.2f}")
+                if 'retail_sales' in timestamps:
+                    print(f"    Date: {timestamps['retail_sales']}")
+            
+            if 'oil_price' in indicators:
+                print(f"\n  Oil Price (WTI): ${indicators['oil_price']:.2f}")
+                if 'oil_price' in timestamps:
+                    print(f"    Date: {timestamps['oil_price']}")
+            
+            if 'vix' in indicators:
+                print(f"\n  VIX (Volatility Index): {indicators['vix']:.2f}")
+                if 'vix' in timestamps:
+                    print(f"    Date: {timestamps['vix']}")
     
     # Display historical data
     if show_history:

@@ -160,14 +160,14 @@
     - Mock historical data fetching
     - _Requirements: 1.2, 1.3, 1.5, 5.4_
 
-- [ ] 6. Implement RecessionModelV2 class (model_v2.py)
-  - [ ] 6.1 Create RecessionModelV2 class inheriting from ForecastModel
+- [x] 6. Implement RecessionModelV2 class (model_v2.py)
+  - [x] 6.1 Create RecessionModelV2 class inheriting from ForecastModel
     - Initialize with v2 configuration
     - Create v2 database table
     - Set up feature engineer and temporal adjuster
     - _Requirements: 5.1_
   
-  - [ ] 6.2 Implement calculate_base_probability method
+  - [x] 6.2 Implement calculate_base_probability method
     - Fetch indicators using data_v2
     - Engineer features
     - Calculate indicator signals (reuse v1 logic)
@@ -175,21 +175,21 @@
     - Return base probability before temporal adjustment
     - _Requirements: 4.2_
   
-  - [ ] 6.3 Implement calculate_probability method
+  - [x] 6.3 Implement calculate_probability method
     - Call calculate_base_probability
     - Apply temporal decay if enabled
     - Store result in v2 database table
     - Support as_of_date parameter for backtesting
     - _Requirements: 1.2, 4.2, 5.2_
   
-  - [ ] 6.4 Implement get_probability_breakdown method
+  - [x] 6.4 Implement get_probability_breakdown method
     - Return base probability, adjusted probability
     - Return indicator signals and feature contributions
     - Return temporal metadata (decay method, rate, adjustment factor)
     - Return days remaining
     - _Requirements: 9.1, 9.3, 9.4_
   
-  - [ ] 6.5 Implement ForecastModel interface methods
+  - [x] 6.5 Implement ForecastModel interface methods
     - get_name, get_description, get_parameters
     - get_last_updated, get_data_sources
     - Ensure backward compatibility with v1 interface
@@ -211,14 +211,14 @@
     - Test backward compatibility
     - _Requirements: 4.2, 5.1, 9.1, 9.3, 9.4_
 
-- [ ] 7. Create v2 configuration (config_v2.py)
+- [x] 7. Create v2 configuration (config_v2.py)
   - Add new indicator series IDs and thresholds
   - Add temporal decay default parameters
   - Add feature engineering configuration
   - Add v2-specific parameter schemas
   - _Requirements: 3.1, 4.6_
 
-- [ ] 8. Create standalone execution script (run_forecast_v2.py)
+- [x] 8. Create standalone execution script (run_forecast_v2.py)
   - Import RecessionModelV2
   - Display base and adjusted probabilities
   - Show all indicators and features
@@ -226,7 +226,7 @@
   - Show historical forecasts with trend analysis
   - _Requirements: 9.1, 9.3, 9.4_
 
-- [ ] 9. Checkpoint - Ensure all core v2 model tests pass
+- [x] 9. Checkpoint - Ensure all core v2 model tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Create Jupyter notebook: Data Exploration (notebooks/01_data_exploration.ipynb)
