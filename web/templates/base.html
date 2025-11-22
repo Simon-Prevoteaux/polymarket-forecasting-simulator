@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Polymarket Forecasting Simulator{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><a href="/">Forecasting Simulator</a></h1>
+            </div>
+            <nav class="sidebar-nav">
+                {% block sidebar %}
+                <div class="nav-section">
+                    <h2>Forecasts</h2>
+                    <ul class="forecast-list">
+                        {% if forecasts %}
+                            {% for forecast in forecasts %}
+                            <li>
+                                <a href="/forecast/{{ forecast.name }}" 
+                                   class="{% if forecast.name == active_forecast %}active{% endif %}">
+                                    {{ forecast.display_name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="no-forecasts">No forecasts available</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endblock %}
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Polymarket Forecasting Simulator{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <header class="page-header">
+        <h1>Polymarket Forecasting Simulator</h1>
+        <p class="subtitle">Build, manage, and visualize probabilistic forecasts for prediction markets</p>
+    </header>
+
+    <section class="forecasts-overview">
+        <h2>Available Forecasts</h2>
+        
+        {% if forecasts %}
+        <div class="forecast-grid">
+            {% for forecast in forecasts %}
+            <div class="forecast-card">
+                <h3>
+                    <a href="/forecast/{{ forecast.name }}">{{ forecast.display_name }}</a>
+                </h3>
+                <p class="forecast-description">{{ forecast.description }}</p>
+                <div class="forecast-meta">
+                    <span class="last-updated">
+                        Last updated: {{ forecast.last_updated.strftime('%Y-%m-%d %H:%M') if forecast.last_updated else 'Never' }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-forecasts-message">
+            <p>No forecast models found.</p>
+            <p class="help-text">
+                To add a forecast model, create a new directory under <code>forecasts/</code> 
+                with a <code>model.py</code> file implementing the ForecastModel interface.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="about">
+        <h2>About</h2>
+        <p>
+            This system enables you to develop individual forecasting models for specific 
+            prediction problems, visualize results, and adjust parameters to simulate 
+            different scenarios. Following Nate Silver's approach to real-world modeling 
+            with modular forecast components and statistical rigor.
+        </p>
+    </section>
+</div>
+{% endblock %}

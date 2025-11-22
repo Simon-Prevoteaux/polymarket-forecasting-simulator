@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}{{ forecast.display_name }} - Polymarket Forecasting Simulator{% endblock %}
+
+{% block content %}
+<div class="forecast-page">
+    <header class="page-header">
+        <h1>{{ forecast.display_name }}</h1>
+        <p class="subtitle">{{ forecast.description }}</p>
+    </header>
+
+    <!-- Current Probability Display -->
+    <section class="probability-display">
+        <div class="probability-card">
+            <div class="probability-label">Current Probability</div>
+            <div class="probability-value">{{ "%.1f"|format(forecast.probability * 100) }}%</div>
+            <div class="last-updated">
+                Last updated: {{ forecast.last_updated.strftime('%Y-%m-%d %H:%M:%S') if forecast.last_updated else 'Never' }}
+            </div>
+        </div>
+    </section>
+
+    <!-- Parameter Adjustment Section -->
+    {% if forecast.parameters %}
+    <section class="parameters-section">
+        <h2>Model Parameters</h2>
+        <p class="section-description">Adjust parameters to simulate different scenarios and see how they affect the forecast probability.</p>
+        
+        <div class="parameters-container">
+            <div class="parameters-grid">
+                {% for param_name, param_info in forecast.parameters.items() %}
+                <div class="parameter-control">
+                    <label for="param-{{ param_name }}" class="parameter-label">
+                        {{ param_info.description or param_name|replace('_', ' ')|title }}
+                    </label>
+                    
+                    {% if param_info.type == 'float' %}
+                    <div class="parameter-input-group">
+                        <input 
+                            type="range" 
+                            id="param-{{ param_name }}" 
+                            name="{{ param_name }}"
+                            class="parameter-slider"
+                            min="{{ param_info.min_value }}" 
+                            max="{{ param_info.max_value }}" 
+                            step="{{ (param_info.max_value - param_info.min_value) / 100 }}"
+                            value="{{ param_info.default }}"
+                            data-default="{{ param_info.default }}"
+                        >
+                        <input 
+                            type="number" 
+                            id="param-{{ param_name }}-value" 
+                            class="parameter-number"
+                            min="{{ param_info.min_value }}" 
+                            max="{{ param_info.max_value }}" 
+                            step="{{ (param_info.max_value - param_info.min_value) / 100 }}"
+                            value="{{ param_info.default }}"
+                        >
+                    </div>
+                    
+                    {% elif param_info.type == 'int' %}
+                    <div class="parameter-input-group">
+                        <input 
+                            type="range" 
+                            id="param-{{ param_name }}" 
+                            name="{{ param_name }}"
+                            class="parameter-slider"
+                            min="{{ param_info.min_value }}" 
+                            max="{{ param_info.max_value }}" 
+                            step="1"
+                            value="{{ param_info.default }}"
+                            data-default="{{ param_info.default }}"
+                        >
+                        <input 
+                            type="number" 
+                            id="param-{{ param_name }}-value" 
+                            class="parameter-number"
+                            min="{{ param_info.min_value }}" 
+                            max="{{ param_info.max_value }}" 
+                            step="1"
+                            value="{{ param_info.default }}"
+                        >
+                    </div>
+                    
+                    {% elif param_info.type == 'bool' %}
+                    <div class="parameter-input-group">
+                        <input 
+                            type="checkbox" 
+                            id="param-{{ param_name }}" 
+                            name="{{ param_name }}"
+                            class="parameter-checkbox"
+                            {% if param_info.default %}checked{% endif %}
+                            data-default="{{ param_info.default }}"
+                        >
+                    </div>
+                    {% endif %}
+                    
+                    <div class="parameter-info">
+                        Default: {{ param_info.default }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="parameters-actions">
+                <button id="reset-parameters" class="btn btn-secondary">Reset to Defaults</button>
+                <button id="simulate-parameters" class="btn btn-primary">Simulate</button>
+            </div>
+            
+            <div id="simulation-result" class="simulation-result" style="display: none;">
+                <div class="simulation-label">Simulated Probability:</div>
+                <div class="simulation-value" id="simulated-probability">--</div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Data Sources and Indicators -->
+    <section class="indicators-section">
+        <h2>Economic Indicators</h2>
+        <div class="indicators-grid">
+            {% if forecast.indicators %}
+                {% for key, value in forecast.indicators.items() %}
+                <div class="indicator-card">
+                    <div class="indicator-name">{{ key|replace('_', ' ')|title }}</div>
+                    <div class="indicator-value">
+                        {% if value is number %}
+                            {{ "%.2f"|format(value) }}
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-data">No indicator data available. Run the model to generate data.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Historical Probability Chart -->
+    <section class="chart-section">
+        <h2>Historical Probability</h2>
+        <div class="chart-container">
+            {% if forecast.history and forecast.history|length > 0 %}
+                <canvas id="probabilityChart" width="800" height="400"></canvas>
+            {% else %}
+                <p class="no-data">No historical data available yet. Run the model to generate historical data.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Data Sources Information -->
+    <section class="data-sources">
+        <h2>Data Sources</h2>
+        <ul class="source-list">
+            {% if forecast.data_sources %}
+                {% for source in forecast.data_sources %}
+                <li>{{ source }}</li>
+                {% endfor %}
+            {% else %}
+                <li>FRED (Federal Reserve Economic Data) - Economic indicators</li>
+            {% endif %}
+        </ul>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if forecast.history and forecast.history|length > 0 %}
+<script>
+// Simple line chart implementation using Canvas
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('probabilityChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Historical data from server (Jinja2 template variable)
+    /* jshint ignore:start */
+    const history = {{ forecast.history|tojson|safe }};
+    /* jshint ignore:end */
+    
+    if (!history || history.length === 0) {
+        return;
+    }
+    
+    // Extract data points
+    const dataPoints = history.map(h => ({
+        timestamp: new Date(h.calculated_at),
+        probability: h.probability
+    }));
+    
+    // Sort by timestamp
+    dataPoints.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Chart dimensions
+    const padding = 60;
+    const chartWidth = canvas.width - 2 * padding;
+    const chartHeight = canvas.height - 2 * padding;
+    
+    // Find min/max for scaling
+    const minProb = 0;  // Always start at 0
+    const maxProb = 1;  // Always end at 1
+    const probRange = maxProb - minProb;
+    
+    const timestamps = dataPoints.map(d => d.timestamp.getTime());
+    const minTime = Math.min(...timestamps);
+    const maxTime = Math.max(...timestamps);
+    const timeRange = maxTime - minTime || 1;  // Avoid division by zero
+    
+    // Helper function to convert data to canvas coordinates
+    function dataToCanvas(timestamp, probability) {
+        const x = padding + ((timestamp.getTime() - minTime) / timeRange) * chartWidth;
+        const y = canvas.height - padding - ((probability - minProb) / probRange) * chartHeight;
+        return { x, y };
+    }
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw axes
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    // Y-axis
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, canvas.height - padding);
+    // X-axis
+    ctx.lineTo(canvas.width - padding, canvas.height - padding);
+    ctx.stroke();
+    
+    // Draw Y-axis labels (probability)
+    ctx.fillStyle = '#666';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 10; i++) {
+        const prob = i / 10;
+        const y = canvas.height - padding - (prob * chartHeight);
+        ctx.fillText((prob * 100).toFixed(0) + '%', padding - 10, y + 4);
+        
+        // Draw grid line
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(canvas.width - padding, y);
+        ctx.stroke();
+    }
+    
+    // Draw X-axis labels (dates)
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.font = '11px sans-serif';
+    
+    // Determine number of labels based on data points
+    let numXLabels = Math.min(5, dataPoints.length);
+    if (dataPoints.length === 1) {
+        numXLabels = 1;
+    }
+    
+    for (let i = 0; i < numXLabels; i++) {
+        let idx;
+        if (numXLabels === 1) {
+            idx = 0;
+        } else {
+            idx = Math.floor(i * (dataPoints.length - 1) / (numXLabels - 1));
+        }
+        const point = dataPoints[idx];
+        const coords = dataToCanvas(point.timestamp, 0);
+        
+        // Format date more compactly
+        const month = point.timestamp.getMonth() + 1;
+        const day = point.timestamp.getDate();
+        const year = point.timestamp.getFullYear();
+        const dateStr = `${month}/${day}/${year}`;
+        
+        ctx.fillText(dateStr, coords.x, canvas.height - padding + 20);
+    }
+    
+    // Draw line chart
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    dataPoints.forEach((point, i) => {
+        const coords = dataToCanvas(point.timestamp, point.probability);
+        if (i === 0) {
+            ctx.moveTo(coords.x, coords.y);
+        } else {
+            ctx.lineTo(coords.x, coords.y);
+        }
+    });
+    
+    ctx.stroke();
+    
+    // Draw data points
+    ctx.fillStyle = '#2563eb';
+    dataPoints.forEach(point => {
+        const coords = dataToCanvas(point.timestamp, point.probability);
+        ctx.beginPath();
+        ctx.arc(coords.x, coords.y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+    });
+    
+    // Draw chart title
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Probability Over Time', canvas.width / 2, 30);
+});
+</script>
+{% endif %}
+{% endblock %}

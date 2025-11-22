@@ -1,0 +1,27 @@
+# Polymarket Forecasting Simulator - Dependencies
+
+# Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Data Processing
+pandas==2.2.0
+numpy==1.26.4
+
+# HTTP Client for Data Fetching
+requests==2.31.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Testing
+pytest==7.4.3
+hypothesis==6.92.1
+
+# Database (SQLite is built-in to Python)
+# No additional package needed
+
+# Optional: Development Tools
+pytest-cov==4.1.0
+black==23.12.1
+flake8==6.1.0
