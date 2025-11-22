@@ -42,6 +42,8 @@ class TestForecast(ForecastModel):
         return 0.5
     def get_last_updated(self):
         return datetime.now()
+    def get_data_sources(self):
+        return []
 '''
         (forecast_dir / 'model.py').write_text(model_content)
         
@@ -85,6 +87,8 @@ class Forecast{i}(ForecastModel):
         return 0.5
     def get_last_updated(self):
         return datetime.now()
+    def get_data_sources(self):
+        return []
 '''
             (forecast_dir / 'model.py').write_text(model_content)
         
@@ -199,6 +203,8 @@ class ValidForecast(ForecastModel):
         return 0.5
     def get_last_updated(self):
         return datetime.now()
+    def get_data_sources(self):
+        return []
 '''
         (valid_dir / 'model.py').write_text(model_content)
         
@@ -243,6 +249,8 @@ def test_forecast_registry_operations():
         def get_last_updated(self):
             from datetime import datetime
             return datetime.now()
+        def get_data_sources(self):
+            return []
     
     # Register a forecast
     mock_model = MockForecast()

@@ -123,7 +123,8 @@ async function simulateParameters() {
     // Disable button during simulation
     if (simulateButton) {
         simulateButton.disabled = true;
-        simulateButton.textContent = 'Simulating...';
+        const originalText = simulateButton.textContent;
+        simulateButton.innerHTML = 'Simulating... <span class="loading-spinner"></span>';
     }
     
     try {

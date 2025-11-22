@@ -9,6 +9,7 @@ import os
 import json
 import time
 import requests
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from pathlib import Path
@@ -16,6 +17,9 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 # Cache directory
@@ -86,7 +90,10 @@ def fetch_fred_data(
     cache_key = f"fred_{series_id}_{start_date}_{end_date}"
     cached_data = get_cached_data(cache_key)
     if cached_data is not None:
+        logger.info(f"Using cached data for FRED series {series_id}")
         return cached_data
+    
+    logger.info(f"Fetching data from FRED API for series {series_id}")
     
     # Make API request with retry logic
     max_retries = 3
@@ -98,6 +105,7 @@ def fetch_fred_data(
             
             # Check for rate limiting
             if response.status_code == 429:
+                logger.error(f"FRED API rate limit exceeded for series {series_id}")
                 raise RateLimitError(
                     f"FRED API rate limit exceeded for series {series_id}. "
                     "Please wait before making more requests."
@@ -112,10 +120,12 @@ def fetch_fred_data(
                         error_msg += f": {error_data['error_message']}"
                 except:
                     pass
+                logger.error(error_msg)
                 raise DataFetchError(error_msg)
             
             # Parse response
             data = response.json()
+            logger.info(f"Successfully fetched data for FRED series {series_id}")
             
             # Cache the successful response
             cache_data(cache_key, data, ttl=DEFAULT_CACHE_TTL)
@@ -123,23 +133,28 @@ def fetch_fred_data(
             return data
             
         except requests.exceptions.Timeout:
+            logger.warning(f"Timeout on attempt {attempt + 1} for series {series_id}")
             if attempt < max_retries - 1:
                 time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
                 continue
+            logger.error(f"Timeout fetching data for series {series_id} after {max_retries} attempts")
             raise DataFetchError(
                 f"Timeout fetching data for series {series_id} after {max_retries} attempts"
             )
         
         except requests.exceptions.ConnectionError:
+            logger.warning(f"Connection error on attempt {attempt + 1} for series {series_id}")
             if attempt < max_retries - 1:
                 time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
                 continue
+            logger.error(f"Network connection error for series {series_id} after {max_retries} attempts")
             raise DataFetchError(
                 f"Network connection error fetching data for series {series_id} "
                 f"after {max_retries} attempts"
             )
         
         except requests.exceptions.RequestException as e:
+            logger.error(f"Request exception for series {series_id}: {str(e)}")
             raise DataFetchError(f"Error fetching data for series {series_id}: {str(e)}")
 
 
@@ -163,9 +178,10 @@ def cache_data(key: str, data: Any, ttl: int = DEFAULT_CACHE_TTL) -> None:
     try:
         with open(cache_file, 'w') as f:
             json.dump(cache_entry, f)
+        logger.debug(f"Cached data for key {key}")
     except Exception as e:
         # Log error but don't fail - caching is optional
-        print(f"Warning: Failed to cache data for key {key}: {str(e)}")
+        logger.warning(f"Failed to cache data for key {key}: {str(e)}")
 
 
 def get_cached_data(key: str) -> Optional[Any]:
@@ -191,14 +207,16 @@ def get_cached_data(key: str) -> Optional[Any]:
         expires_at = datetime.fromisoformat(cache_entry['expires_at'])
         if datetime.now() > expires_at:
             # Cache expired, remove file
+            logger.debug(f"Cache expired for key {key}")
             cache_file.unlink()
             return None
         
+        logger.debug(f"Cache hit for key {key}")
         return cache_entry['data']
     
     except Exception as e:
         # If there's any error reading cache, treat as cache miss
-        print(f"Warning: Failed to read cache for key {key}: {str(e)}")
+        logger.warning(f"Failed to read cache for key {key}: {str(e)}")
         return None
 
 

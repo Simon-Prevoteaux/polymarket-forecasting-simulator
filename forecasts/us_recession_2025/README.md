@@ -155,6 +155,88 @@ Regular backtesting and calibration is recommended to maintain accuracy.
 - Yield curve as recession predictor: https://www.newyorkfed.org/research/capital_markets/ycfaq
 - Nate Silver's forecasting methodology: "The Signal and the Noise" (2012)
 
+## Testing
+
+The model includes comprehensive unit tests and property-based tests:
+
+**Unit Tests** (`tests/test_recession_model.py`):
+- Test with known historical recession data
+- Test with economic expansion data
+- Test with default parameters
+- Test handling of missing indicators
+
+**Property-Based Tests** (`tests/test_recession_model_properties.py`):
+- Probability bounds enforcement
+- Economic indicators collection
+- Database persistence
+- Parameter validation
+
+Run tests:
+```bash
+pytest forecasts/us_recession_2025/tests/ -v
+```
+
+## Validation
+
+Validate the model against historical data:
+
+```bash
+python forecasts/us_recession_2025/tests/validate_recession_model.py
+```
+
+This script:
+- Fetches current economic indicators
+- Calculates recession probability
+- Displays all indicator values
+- Shows historical forecast trends
+
+## Interpretation Guide
+
+**Probability Ranges:**
+- **0-20%**: Very low recession risk - economy appears healthy
+- **20-40%**: Low to moderate risk - some warning signs present
+- **40-60%**: Moderate risk - mixed signals, heightened uncertainty
+- **60-80%**: High risk - multiple recession indicators present
+- **80-100%**: Very high risk - strong recession signals
+
+**Key Indicators to Watch:**
+1. **Yield Curve**: Most reliable predictor - inversions (negative spread) have preceded most recessions
+2. **Unemployment**: Rising unemployment is a strong recession signal
+3. **GDP Growth**: Negative growth defines a recession
+4. **Consumer Confidence**: Leading indicator of consumer spending
+5. **Leading Indicators**: Composite index designed to predict turning points
+
+## Maintenance
+
+**Regular Updates:**
+- Review indicator weights quarterly based on recent economic patterns
+- Update thresholds in `config.py` as economic conditions change
+- Backtest against new recession data when available
+- Monitor FRED API for data availability and changes
+
+**Calibration:**
+- Compare forecasts with professional predictions (Fed, IMF, private sector)
+- Adjust weights based on indicator performance
+- Consider adding new indicators as they become available
+- Document all changes and rationale
+
+## Known Issues
+
+1. **GDP Data Lag**: GDP data is reported quarterly with a lag, so recent changes may not be reflected
+2. **Indicator Correlation**: Some indicators are correlated, which may overweight certain signals
+3. **Structural Changes**: Economic relationships change over time, requiring periodic recalibration
+4. **Black Swan Events**: Model cannot predict unprecedented events (pandemics, wars, etc.)
+
+## Future Enhancements
+
+Potential improvements to consider:
+- Add more indicators (housing starts, credit spreads, manufacturing PMI)
+- Implement time-series analysis for trend detection
+- Add confidence intervals using bootstrap methods
+- Incorporate market-based recession probabilities
+- Add regional recession forecasts
+- Implement ensemble methods combining multiple approaches
+
 ## Version History
 
-- v1.0 (2024): Initial implementation with six economic indicators and weighted logistic regression approach
+- **v1.0** (2024): Initial implementation with six economic indicators and weighted logistic regression approach

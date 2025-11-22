@@ -92,21 +92,30 @@ def test_insert_and_retrieve_forecast():
     
     assert row_id > 0, "Should return valid row ID"
     
-    # Retrieve the record
-    history = get_forecast_history('us_recession_2025', limit=1)
+    # Retrieve the specific record by ID
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "SELECT * FROM forecast_us_recession_2025 WHERE id = ?",
+            (row_id,)
+        )
+        row = cursor.fetchone()
     
-    assert len(history) > 0, "Should retrieve at least one record"
-    
-    latest = history[0]
+    assert row is not None, "Should retrieve the inserted record"
     
     # Verify the data
-    assert latest['id'] == row_id, "Should retrieve the correct record"
-    assert latest['probability'] == test_probability, "Probability should match"
-    assert latest['parameters'] == test_params, "Parameters should match"
-    assert 'indicators' in latest['data_snapshot'], "Data snapshot should contain indicators"
-    assert latest['yield_curve_value'] == 0.5, "Yield curve value should match"
-    assert latest['unemployment_rate'] == 4.2, "Unemployment rate should match"
-    assert latest['calculated_at'] is not None, "Should have timestamp"
+    assert row['id'] == row_id, "Should retrieve the correct record"
+    assert row['probability'] == test_probability, "Probability should match"
+    
+    # Parse JSON fields
+    import json
+    params = json.loads(row['parameters'])
+    data_snapshot = json.loads(row['data_snapshot'])
+    
+    assert params == test_params, "Parameters should match"
+    assert 'indicators' in data_snapshot, "Data snapshot should contain indicators"
+    assert row['yield_curve_value'] == 0.5, "Yield curve value should match"
+    assert row['unemployment_rate'] == 4.2, "Unemployment rate should match"
+    assert row['calculated_at'] is not None, "Should have timestamp"
 
 
 def test_probability_constraint():

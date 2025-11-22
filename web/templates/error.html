@@ -10,6 +10,9 @@
 
     <section class="error-content">
         <p class="error-message">{{ error_message }}</p>
+        {% if error_description %}
+        <p class="error-description">{{ error_description }}</p>
+        {% endif %}
         
         {% if error_code == 404 %}
         <div class="error-help">

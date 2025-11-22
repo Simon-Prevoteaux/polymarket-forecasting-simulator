@@ -85,6 +85,9 @@ class TestModel{name.capitalize()}(ForecastModel):
     
     def get_last_updated(self):
         return datetime.now()
+    
+    def get_data_sources(self):
+        return []
 '''
             (forecast_dir / 'model.py').write_text(model_content)
         
@@ -170,6 +173,8 @@ class Model{name.capitalize()}(ForecastModel):
         return 0.5
     def get_last_updated(self):
         return datetime.now()
+    def get_data_sources(self):
+        return []
 '''
             (forecast_dir / 'model.py').write_text(model_content)
         
@@ -243,6 +248,8 @@ class NewModel(ForecastModel):
         return 0.5
     def get_last_updated(self):
         return datetime.now()
+    def get_data_sources(self):
+        return []
 '''
         (forecast_dir / 'model.py').write_text(model_content)
         

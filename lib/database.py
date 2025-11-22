@@ -54,7 +54,7 @@ def get_connection_context():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        logger.error(f"Database error: {e}")
+        logger.error(f"Database error: {e}", exc_info=True)
         raise
     finally:
         conn.close()
