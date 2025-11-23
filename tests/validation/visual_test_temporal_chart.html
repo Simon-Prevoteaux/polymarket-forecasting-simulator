@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporal Decay Chart - Visual Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .info-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .note {
+            padding: 15px;
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .note-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Temporal Decay Chart Visualization</h1>
+        <p class="subtitle">Visual test of the temporal decay chart JavaScript implementation</p>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Base Probability</div>
+                <div class="info-value">48.8%</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Adjusted Probability</div>
+                <div class="info-value">8.8%</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Days Remaining</div>
+                <div class="info-value">37</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Decay Method</div>
+                <div class="info-value">Adaptive</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="temporalDecayChart"></canvas>
+        </div>
+        
+        <!-- Hidden breakdown data for JavaScript -->
+        <div id="breakdown-data" 
+             data-breakdown='{"base_probability": 0.488, "adjusted_probability": 0.088, "days_remaining": 37, "temporal_metadata": {"method": "adaptive", "days_remaining": 37, "adjustment_factor": 0.1797, "parameters": {"total_days": 365, "decay_power": 1.5, "amplification_power": 1.5, "lower_threshold": 0.4, "upper_threshold": 0.6}}}'
+             style="display: none;">
+        </div>
+        
+        <div class="note">
+            <div class="note-title">About This Chart</div>
+            <p>This chart shows how the recession probability would evolve from now until December 31, 2025, assuming the base probability remains constant at 48.8%.</p>
+            <ul>
+                <li><strong>Blue filled area:</strong> Projected adjusted probability over time</li>
+                <li><strong>Dashed teal line:</strong> Base probability (no temporal adjustment)</li>
+                <li><strong>Red dot:</strong> Current position (today)</li>
+            </ul>
+            <p>The adaptive method applies decay to probabilities below 40% and amplification to probabilities above 60%, with a smooth transition in between.</p>
+        </div>
+    </div>
+    
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Temporal decay chart functions -->
+    <script>
+        /**
+         * Calculate decayed probability using power-law decay formula.
+         */
+        function calculateDecayedProbability(baseProbability, daysRemaining, decayPower, totalDays = 365, threshold = null) {
+            if (baseProbability < 0 || baseProbability > 1) {
+                console.error('baseProbability must be in [0, 1]');
+                return baseProbability;
+            }
+            
+            if (threshold !== null && baseProbability >= threshold) {
+                return baseProbability;
+            }
+            
+            if (daysRemaining <= 0) {
+                return Math.max(0.0, baseProbability * 0.001);
+            }
+            
+            if (daysRemaining >= totalDays) {
+                return baseProbability;
+            }
+            
+            const timeRatio = daysRemaining / totalDays;
+            const timeFactor = Math.pow(timeRatio, decayPower);
+            
+            return baseProbability * timeFactor;
+        }
+        
+        /**
+         * Render temporal decay chart.
+         */
+        function renderTemporalDecayChart(canvasId, breakdown) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error(`Canvas element '${canvasId}' not found`);
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const daysRemaining = breakdown.days_remaining;
+            const baseProb = breakdown.base_probability;
+            const currentAdjusted = breakdown.adjusted_probability;
+            
+            const metadata = breakdown.temporal_metadata || {};
+            const parameters = metadata.parameters || {};
+            const decayPower = parameters.decay_power || 1.5;
+            const totalDays = parameters.total_days || 365;
+            const lowerThreshold = parameters.lower_threshold || null;
+            const threshold = parameters.threshold || lowerThreshold;
+            
+            const projectionData = [];
+            const numPoints = Math.min(50, daysRemaining + 1);
+            const step = Math.max(1, Math.floor(daysRemaining / numPoints));
+            
+            for (let daysFromNow = 0; daysFromNow <= daysRemaining; daysFromNow += step) {
+                const daysRemainingAtPoint = daysRemaining - daysFromNow;
+                const adjustedProb = calculateDecayedProbability(
+                    baseProb,
+                    daysRemainingAtPoint,
+                    decayPower,
+                    totalDays,
+                    threshold
+                );
+                projectionData.push({
+                    x: daysFromNow,
+                    y: adjustedProb * 100
+                });
+            }
+            
+            if (projectionData[projectionData.length - 1].x !== daysRemaining) {
+                const finalProb = calculateDecayedProbability(baseProb, 0, decayPower, totalDays, threshold);
+                projectionData.push({
+                    x: daysRemaining,
+                    y: finalProb * 100
+                });
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Projected Adjusted Probability',
+                            data: projectionData,
+                            borderColor: '#45b7d1',
+                            backgroundColor: 'rgba(69, 183, 209, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Base Probability (No Decay)',
+                            data: [
+                                {x: 0, y: baseProb * 100},
+                                {x: daysRemaining, y: baseProb * 100}
+                            ],
+                            borderColor: '#4ecdc4',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Current Position',
+                            data: [{x: 0, y: currentAdjusted * 100}],
+                            pointRadius: 8,
+                            pointBackgroundColor: '#ff6b6b',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            showLine: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Days from Now',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Probability (%)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                title: function(context) {
+                                    const daysFromNow = context[0].parsed.x;
+                                    return `${daysFromNow} days from now`;
+                                },
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y.toFixed(1);
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            console.log('Temporal decay chart rendered successfully');
+        }
+        
+        // Initialize chart on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const breakdownElement = document.getElementById('breakdown-data');
+            if (breakdownElement) {
+                const breakdownJson = breakdownElement.getAttribute('data-breakdown');
+                if (breakdownJson) {
+                    const breakdown = JSON.parse(breakdownJson);
+                    renderTemporalDecayChart('temporalDecayChart', breakdown);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

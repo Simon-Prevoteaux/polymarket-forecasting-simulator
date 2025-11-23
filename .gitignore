@@ -60,3 +60,6 @@ logs/
 # Cache
 data/cache/
 *.cache
+
+# Notebook data
+forecasts/us_recession_2025/notebooks/data/

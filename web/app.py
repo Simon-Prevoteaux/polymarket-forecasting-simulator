@@ -198,6 +198,20 @@ def forecast_detail(name):
             )
             data_sources = []
         
+        # Get probability breakdown if available
+        breakdown = None
+        show_temporal = False
+        try:
+            breakdown = model.get_probability_breakdown()
+            if breakdown is not None:
+                show_temporal = True
+                logger.info(f"Breakdown data available for {name}")
+        except Exception as e:
+            log_error_with_context(
+                logger, e,
+                {'forecast': name, 'action': 'get_probability_breakdown'}
+            )
+        
         # Build forecast data for template
         forecast_data = {
             'name': name,
@@ -208,14 +222,16 @@ def forecast_detail(name):
             'indicators': indicators,
             'history': history,
             'parameters': parameters,
-            'data_sources': data_sources
+            'data_sources': data_sources,
+            'breakdown': breakdown
         }
         
         logger.info(f"Successfully rendered forecast detail page for {name}")
         return render_template('forecast.html', 
                              forecast=forecast_data,
                              forecasts=forecasts,
-                             active_forecast=name)
+                             active_forecast=name,
+                             show_temporal=show_temporal)
     
     except HTTPException:
         # Re-raise HTTP exceptions (like 404) so they're handled by error handlers
@@ -268,6 +284,85 @@ def api_forecasts():
         return jsonify({
             'error': 'Internal server error',
             'message': 'Failed to retrieve forecast list'
+        }), 500
+
+
+@app.route('/api/forecast/<name>/breakdown')
+def api_breakdown(name):
+    """
+    API endpoint for getting detailed probability breakdown.
+    
+    This endpoint returns detailed breakdown information if the model supports it,
+    or falls back to basic probability information if not.
+    
+    Args:
+        name: The forecast model name
+        
+    Returns:
+        JSON response with probability breakdown or basic probability
+    """
+    from werkzeug.exceptions import HTTPException
+    
+    try:
+        logger.info(f"API request: get breakdown for forecast {name}")
+        registry = get_forecast_registry()
+        
+        # Get the forecast model
+        model = registry.get(name)
+        if model is None:
+            logger.warning(f"Forecast not found for breakdown: {name}")
+            return jsonify({
+                'error': 'Forecast not found',
+                'forecast': name,
+                'message': f'No forecast model named "{name}" exists'
+            }), 404
+        
+        # Check if model has get_probability_breakdown method
+        # (All models have it from base class, but it may return None)
+        try:
+            breakdown = model.get_probability_breakdown()
+            
+            if breakdown is not None:
+                # Model provides detailed breakdown
+                logger.info(f"Breakdown available for {name}")
+                return jsonify({
+                    'success': True,
+                    'forecast': name,
+                    'has_breakdown': True,
+                    'breakdown': breakdown
+                }), 200
+            else:
+                # Model doesn't provide breakdown, return basic probability
+                logger.info(f"No breakdown available for {name}, returning basic probability")
+                probability = model.calculate_probability()
+                return jsonify({
+                    'success': True,
+                    'forecast': name,
+                    'has_breakdown': False,
+                    'probability': probability
+                }), 200
+        
+        except Exception as e:
+            # Error getting breakdown or probability
+            log_error_with_context(
+                logger, e,
+                {'forecast': name, 'action': 'get_breakdown'}
+            )
+            return jsonify({
+                'error': 'Calculation failed',
+                'message': str(e),
+                'forecast': name
+            }), 500
+    
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    
+    except Exception as e:
+        log_error_with_context(logger, e, {'route': 'api_breakdown', 'forecast': name})
+        return jsonify({
+            'error': 'Internal server error',
+            'message': 'An unexpected error occurred while getting breakdown'
         }), 500
 
 

@@ -20,6 +20,99 @@
         </div>
     </section>
 
+    <!-- Temporal Decay Section (V2 Models Only) -->
+    {% if show_temporal and forecast.breakdown %}
+    <section class="temporal-decay-section">
+        <h2>Temporal Decay Analysis</h2>
+        <p class="section-description">
+            This model incorporates time-to-event decay, adjusting the probability based on time remaining until the forecast deadline.
+        </p>
+        
+        <!-- Probability Comparison -->
+        <div class="probability-comparison">
+            <div class="prob-item base-probability">
+                <div class="prob-item-label">Base Probability</div>
+                <div class="prob-item-value">{{ "%.1f"|format(forecast.breakdown.base_probability * 100) }}%</div>
+                <div class="prob-item-description">Before temporal adjustment</div>
+            </div>
+            
+            <div class="prob-item adjusted-probability">
+                <div class="prob-item-label">Adjusted Probability</div>
+                <div class="prob-item-value">{{ "%.1f"|format(forecast.breakdown.adjusted_probability * 100) }}%</div>
+                <div class="prob-item-description">After temporal adjustment</div>
+            </div>
+            
+            <div class="prob-item">
+                <div class="prob-item-label">Days Remaining</div>
+                <div class="prob-item-value">{{ forecast.breakdown.days_remaining }}</div>
+                <div class="prob-item-description">Until December 31, 2025</div>
+                <span class="days-remaining">{{ forecast.breakdown.days_remaining }} days until deadline</span>
+            </div>
+        </div>
+        
+        <!-- Temporal Decay Chart -->
+        <div class="decay-chart-container">
+            <h3>Probability Projection Over Time</h3>
+            <p class="chart-description">
+                This chart shows how the probability would evolve as the deadline approaches, assuming the base probability remains constant.
+            </p>
+            
+            <!-- Hidden element containing breakdown data for JavaScript -->
+            <div id="breakdown-data" 
+                 data-breakdown='{{ forecast.breakdown | tojson | safe }}'
+                 style="display: none;">
+            </div>
+            
+            <canvas id="temporalDecayChart" width="800" height="400"></canvas>
+        </div>
+        
+        <!-- Temporal Metadata -->
+        {% if forecast.breakdown.temporal_metadata %}
+        <div class="decay-metadata">
+            <h3>Temporal Adjustment Details</h3>
+            <div class="metadata-grid">
+                {% if forecast.breakdown.temporal_metadata.method %}
+                <div class="metadata-item">
+                    <span class="metadata-label">Decay Method:</span>
+                    <span class="metadata-value">{{ forecast.breakdown.temporal_metadata.method|title }}</span>
+                </div>
+                {% endif %}
+                
+                {% if forecast.breakdown.temporal_metadata.adjustment_factor is not none %}
+                <div class="metadata-item">
+                    <span class="metadata-label">Adjustment Factor:</span>
+                    <span class="metadata-value">{{ "%.4f"|format(forecast.breakdown.temporal_metadata.adjustment_factor) }}</span>
+                </div>
+                {% endif %}
+                
+                {% if forecast.breakdown.temporal_metadata.days_remaining is not none %}
+                <div class="metadata-item">
+                    <span class="metadata-label">Days Remaining:</span>
+                    <span class="metadata-value">{{ forecast.breakdown.temporal_metadata.days_remaining }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- Method-specific parameters -->
+                {% if forecast.breakdown.temporal_metadata.parameters %}
+                    {% for param_key, param_value in forecast.breakdown.temporal_metadata.parameters.items() %}
+                    <div class="metadata-item">
+                        <span class="metadata-label">{{ param_key|replace('_', ' ')|title }}:</span>
+                        <span class="metadata-value">
+                            {% if param_value is number %}
+                                {{ "%.4f"|format(param_value) if param_value < 100 else param_value|int }}
+                            {% else %}
+                                {{ param_value }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+
     <!-- Parameter Adjustment Section -->
     {% if forecast.parameters %}
     <section class="parameters-section">
@@ -41,9 +134,9 @@
                             id="param-{{ param_name }}" 
                             name="{{ param_name }}"
                             class="parameter-slider"
-                            min="{{ param_info.min_value }}" 
-                            max="{{ param_info.max_value }}" 
-                            step="{{ (param_info.max_value - param_info.min_value) / 100 }}"
+                            min="{{ param_info.get('min_value', param_info.get('min', 0)) }}" 
+                            max="{{ param_info.get('max_value', param_info.get('max', 1)) }}" 
+                            step="{{ param_info.get('step', (param_info.get('max_value', param_info.get('max', 1)) - param_info.get('min_value', param_info.get('min', 0))) / 100) }}"
                             value="{{ param_info.default }}"
                             data-default="{{ param_info.default }}"
                         >
@@ -51,9 +144,9 @@
                             type="number" 
                             id="param-{{ param_name }}-value" 
                             class="parameter-number"
-                            min="{{ param_info.min_value }}" 
-                            max="{{ param_info.max_value }}" 
-                            step="{{ (param_info.max_value - param_info.min_value) / 100 }}"
+                            min="{{ param_info.get('min_value', param_info.get('min', 0)) }}" 
+                            max="{{ param_info.get('max_value', param_info.get('max', 1)) }}" 
+                            step="{{ param_info.get('step', (param_info.get('max_value', param_info.get('max', 1)) - param_info.get('min_value', param_info.get('min', 0))) / 100) }}"
                             value="{{ param_info.default }}"
                         >
                     </div>
@@ -65,9 +158,9 @@
                             id="param-{{ param_name }}" 
                             name="{{ param_name }}"
                             class="parameter-slider"
-                            min="{{ param_info.min_value }}" 
-                            max="{{ param_info.max_value }}" 
-                            step="1"
+                            min="{{ param_info.get('min_value', param_info.get('min', 0)) }}" 
+                            max="{{ param_info.get('max_value', param_info.get('max', 100)) }}" 
+                            step="{{ param_info.get('step', 1) }}"
                             value="{{ param_info.default }}"
                             data-default="{{ param_info.default }}"
                         >
@@ -75,9 +168,9 @@
                             type="number" 
                             id="param-{{ param_name }}-value" 
                             class="parameter-number"
-                            min="{{ param_info.min_value }}" 
-                            max="{{ param_info.max_value }}" 
-                            step="1"
+                            min="{{ param_info.get('min_value', param_info.get('min', 0)) }}" 
+                            max="{{ param_info.get('max_value', param_info.get('max', 100)) }}" 
+                            step="{{ param_info.get('step', 1) }}"
                             value="{{ param_info.default }}"
                         >
                     </div>

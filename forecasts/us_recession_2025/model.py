@@ -292,3 +292,8 @@ class RecessionModel(ForecastModel):
         except Exception as e:
             logger.error(f"Failed to save forecast result: {e}")
             # Don't raise - calculation succeeded even if save failed
+
+
+# For web interface: Use V2 as the default model
+# The forecast discovery system will find this class first
+from .model_v2 import RecessionModelV2 as RecessionModel  # noqa: F811

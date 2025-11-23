@@ -6,7 +6,7 @@ Tests basic routing and template rendering for the web interface.
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'web'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..', 'web'))
 
 import pytest
 from app import app
@@ -200,6 +200,7 @@ def test_routes_registered():
     assert '/' in routes
     assert '/forecast/<name>' in routes
     assert '/api/forecasts' in routes
+    assert '/api/forecast/<name>/breakdown' in routes
     assert '/api/forecast/<name>/simulate' in routes
 
 
@@ -215,3 +216,31 @@ def test_forecast_detail_displays_parameters(client):
     assert b'reset-parameters' in response.data or b'Reset to Defaults' in response.data
     # Check for simulate button
     assert b'simulate-parameters' in response.data or b'Simulate' in response.data
+
+
+def test_api_breakdown_route_with_valid_forecast(client):
+    """Test that the API breakdown endpoint works with a valid forecast."""
+    response = client.get('/api/forecast/us_recession_2025/breakdown')
+    assert response.status_code == 200
+    assert response.is_json
+    data = response.get_json()
+    assert 'success' in data
+    assert data['success'] is True
+    assert 'forecast' in data
+    assert data['forecast'] == 'us_recession_2025'
+    assert 'has_breakdown' in data
+    # Should have either breakdown or probability
+    if data['has_breakdown']:
+        assert 'breakdown' in data
+    else:
+        assert 'probability' in data
+
+
+def test_api_breakdown_route_with_nonexistent_forecast(client):
+    """Test that the API breakdown endpoint returns 404 for nonexistent forecast."""
+    response = client.get('/api/forecast/nonexistent_forecast/breakdown')
+    assert response.status_code == 404
+    assert response.is_json
+    data = response.get_json()
+    assert 'error' in data
+    assert data['error'] == 'Forecast not found'
