@@ -307,25 +307,25 @@
     - **Property 11: Notebook data access consistency**
     - **Validates: Requirements 2.4**
 
-- [ ] 13. Create Jupyter notebook: Backtesting Results (notebooks/04_backtesting_results.ipynb)
-  - [ ] 13.1 Set up notebook structure
+- [x] 13. Create Jupyter notebook: Backtesting Results (notebooks/04_backtesting_results.ipynb)
+  - [x] 13.1 Set up notebook structure
     - Import backtesting engine
     - Load historical backtest results
     - _Requirements: 8.1, 8.2_
   
-  - [ ] 13.2 Visualize historical performance
+  - [x] 13.2 Visualize historical performance
     - Plot probability evolution over time
     - Mark actual recession periods
     - Show v1 vs v2 comparison
     - _Requirements: 1.4, 2.3_
   
-  - [ ] 13.3 Calculate and display performance metrics
+  - [x] 13.3 Calculate and display performance metrics
     - Show Brier score decomposition
     - Create calibration plots
     - Display discrimination metrics
     - _Requirements: 1.5_
   
-  - [ ] 13.4 Analyze forecast errors
+  - [x] 13.4 Analyze forecast errors
     - Identify periods of over/under-prediction
     - Analyze error patterns
     - Suggest improvements
