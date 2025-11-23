@@ -280,30 +280,30 @@
     - Evaluate predictive power
     - _Requirements: 2.2_
 
-- [ ] 12. Create Jupyter notebook: Model Comparison (notebooks/03_model_comparison.ipynb)
-  - [ ] 12.1 Set up notebook structure
+- [x] 12. Create Jupyter notebook: Model Comparison (notebooks/03_model_comparison.ipynb)
+  - [x] 12.1 Set up notebook structure
     - Import v1 and v2 models
     - Load current data
     - _Requirements: 8.1, 8.2_
   
-  - [ ] 12.2 Compare v1 and v2 predictions
+  - [x] 12.2 Compare v1 and v2 predictions
     - Run both models on same data
     - Display side-by-side probabilities
     - Show probability breakdown for v2
     - _Requirements: 2.3, 5.3_
   
-  - [ ] 12.3 Analyze parameter sensitivity
+  - [x] 12.3 Analyze parameter sensitivity
     - Test different weight combinations
     - Visualize impact on probability
     - Identify most influential parameters
     - _Requirements: 2.3_
   
-  - [ ] 12.4 Visualize feature importance
+  - [x] 12.4 Visualize feature importance
     - Show contribution of each feature
     - Compare v1 indicators vs v2 features
     - _Requirements: 2.3_
   
-  - [ ]* 12.5 Write property test for notebook data consistency
+  - [x] 12.5 Write property test for notebook data consistency
     - **Property 11: Notebook data access consistency**
     - **Validates: Requirements 2.4**
 

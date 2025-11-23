@@ -149,11 +149,118 @@ python create_<notebook_name>.py
 
 ## Example: Real-World Usage
 
-See `forecasts/us_recession_2025/notebooks/create_indicator_analysis.py` for a complete example that:
+See these complete examples in `forecasts/us_recession_2025/notebooks/`:
+
+**`create_indicator_analysis.py`**:
 - Creates a 24-cell notebook
 - Includes complex data analysis code
 - Handles multiple indicator visualizations
 - Properly escapes all strings automatically
+
+**`create_model_comparison.py`**:
+- Creates a 23-cell notebook for model comparison
+- Demonstrates parameter sensitivity analysis
+- Includes multiple visualization types (bar charts, line plots, pie charts)
+- Shows how to structure analysis sections with markdown headers
+
+## Generator Script Best Practices
+
+### 1. Keep Generator Scripts in the Same Directory
+
+Store the generator script alongside the notebook it creates:
+```
+notebooks/
+├── create_model_comparison.py    # Generator script
+├── 03_model_comparison.ipynb     # Generated notebook
+```
+
+This makes it clear which script generates which notebook and makes updates easier.
+
+### 2. Use Descriptive Cell Comments
+
+When building the cells list, add comments to describe each cell:
+```python
+cells = []
+
+# Cell 1: Title and Introduction
+cells.append({
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [...]
+})
+
+# Cell 2: Setup - Add project root to path
+cells.append({
+    "cell_type": "code",
+    ...
+})
+```
+
+### 3. Build Cells Incrementally with append()
+
+Instead of defining all cells in one large list, build them incrementally:
+```python
+cells = []
+
+# Add cells one at a time
+cells.append(title_cell)
+cells.append(setup_cell)
+cells.append(import_cell)
+# ... more cells
+
+notebook['cells'] = cells
+```
+
+This makes the generator script more readable and easier to modify.
+
+### 4. Use Multi-line Strings for Complex Code
+
+For code cells with multiple lines, use multi-line strings:
+```python
+cells.append({
+    "cell_type": "code",
+    "execution_count": None,
+    "metadata": {},
+    "outputs": [],
+    "source": [
+        "# Import libraries\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# Set visualization style\n",
+        "plt.rcParams['figure.figsize'] = (12, 6)"
+    ]
+})
+```
+
+### 5. Include a Success Message
+
+Always print a success message showing the number of cells created:
+```python
+print(f"✓ Created {output_path} with {len(cells)} cells")
+```
+
+This confirms the notebook was generated successfully.
+
+### 6. Make the Script Executable
+
+Add a shebang and main guard:
+```python
+#!/usr/bin/env python3
+"""
+Script to create the notebook_name.ipynb notebook
+"""
+
+import json
+
+def create_notebook():
+    # ... notebook creation code ...
+    pass
+
+if __name__ == "__main__":
+    create_notebook()
+```
 
 ## When to Regenerate
 
