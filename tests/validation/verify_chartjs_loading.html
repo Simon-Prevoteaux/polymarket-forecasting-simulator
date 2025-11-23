@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js Loading Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            margin-top: 20px;
+        }
+        canvas {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Chart.js Loading Verification</h1>
+        
+        <div id="status" class="status">
+            Checking Chart.js availability...
+        </div>
+        
+        <div id="details"></div>
+        
+        <canvas id="testChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Chart.js library (same as in base.html) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusDiv = document.getElementById('status');
+            const detailsDiv = document.getElementById('details');
+            
+            // Check if Chart.js is loaded
+            if (typeof Chart !== 'undefined') {
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✓ Chart.js is successfully loaded!';
+                
+                // Display version info
+                detailsDiv.innerHTML = `
+                    <div class="info">
+                        <strong>Chart.js Details:</strong><br>
+                        Version: <code>${Chart.version}</code><br>
+                        Type: <code>${typeof Chart}</code><br>
+                        Available: <code>true</code>
+                    </div>
+                `;
+                
+                // Create a simple test chart to verify functionality
+                const ctx = document.getElementById('testChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                        datasets: [{
+                            label: 'Test Data',
+                            data: [12, 19, 3, 5, 2],
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Chart.js Test Chart'
+                            }
+                        }
+                    }
+                });
+                
+                console.log('✓ Chart.js loaded successfully');
+                console.log('Version:', Chart.version);
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '✗ Chart.js failed to load!';
+                
+                detailsDiv.innerHTML = `
+                    <div class="info">
+                        <strong>Error:</strong> Chart.js library is not available.<br>
+                        Check the CDN link and network connection.
+                    </div>
+                `;
+                
+                console.error('✗ Chart.js not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

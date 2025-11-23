@@ -365,8 +365,8 @@
 - [ ] 16. Checkpoint - Ensure all notebooks execute successfully
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 17. Extend ForecastModel base interface (forecasts/__init__.py)
-  - [ ] 17.1 Add optional get_probability_breakdown method
+- [x] 17. Extend ForecastModel base interface (forecasts/__init__.py)
+  - [x] 17.1 Add optional get_probability_breakdown method
     - Add method signature to base class
     - Return None by default
     - Document expected return structure
@@ -378,14 +378,14 @@
     - Test backward compatibility
     - _Requirements: 3.4, 9.5_
 
-- [ ] 18. Enhance Flask API endpoints (web/app.py)
-  - [ ] 18.1 Create /api/forecast/<name>/breakdown endpoint
+- [x] 18. Enhance Flask API endpoints (web/app.py)
+  - [x] 18.1 Create /api/forecast/<name>/breakdown endpoint
     - Check if model has get_probability_breakdown method
     - Return breakdown data if available
     - Return basic probability if not available
     - _Requirements: 9.1, 9.3, 9.4_
   
-  - [ ] 18.2 Update /forecast/<name> route
+  - [x] 18.2 Update /forecast/<name> route
     - Get breakdown data if available
     - Pass breakdown to template
     - Set show_temporal flag
@@ -409,20 +409,20 @@
     - Test error handling
     - _Requirements: 9.1, 9.3, 9.4, 9.5_
 
-- [ ] 19. Update forecast.html template (web/templates/forecast.html)
-  - [ ] 19.1 Add conditional temporal decay section
+- [x] 19. Update forecast.html template (web/templates/forecast.html)
+  - [x] 19.1 Add conditional temporal decay section
     - Check show_temporal flag
     - Display base and adjusted probabilities
     - Display days remaining
     - Display temporal metadata
     - _Requirements: 9.1, 9.3, 9.4_
   
-  - [ ] 19.2 Add temporal decay chart container
+  - [x] 19.2 Add temporal decay chart container
     - Add canvas element for Chart.js
     - Add chart container styling
     - _Requirements: 9.2_
 
-- [ ] 20. Add temporal decay visualization CSS (web/static/css/style.css)
+- [x] 20. Add temporal decay visualization CSS (web/static/css/style.css)
   - Add .temporal-decay-section styles
   - Add .probability-comparison grid styles
   - Add .prob-item card styles
@@ -431,13 +431,13 @@
   - Ensure responsive design
   - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 21. Implement temporal decay chart JavaScript (web/static/js/main.js)
-  - [ ] 21.1 Implement calculateDecayedProbability function
+- [x] 21. Implement temporal decay chart JavaScript (web/static/js/main.js)
+  - [x] 21.1 Implement calculateDecayedProbability function
     - Apply exponential decay formula
     - Handle threshold logic
     - _Requirements: 9.2_
   
-  - [ ] 21.2 Implement renderTemporalDecayChart function
+  - [x] 21.2 Implement renderTemporalDecayChart function
     - Generate projection data points
     - Create Chart.js line chart
     - Add base probability reference line
@@ -445,7 +445,7 @@
     - Configure tooltips and legend
     - _Requirements: 9.2_
   
-  - [ ] 21.3 Add chart initialization on page load
+  - [x] 21.3 Add chart initialization on page load
     - Check if breakdown data exists
     - Initialize chart with data
     - Handle errors gracefully
@@ -461,12 +461,12 @@
     - Test edge cases (0 days, large days)
     - _Requirements: 9.2_
 
-- [ ] 22. Add Chart.js library to base template (web/templates/base.html)
+- [x] 22. Add Chart.js library to base template (web/templates/base.html)
   - Add Chart.js CDN link
   - Ensure loaded before main.js
   - _Requirements: 9.2_
 
-- [ ] 23. Final integration testing
+- [x] 23. Final integration testing
   - [ ]* 23.1 Test v1 model display (no temporal section)
     - Verify v1 forecast displays normally
     - Verify no temporal section shown
@@ -489,10 +489,10 @@
     - Test on desktop viewport
     - _Requirements: 9.1, 9.2_
 
-- [ ] 24. Final checkpoint - Ensure all tests pass
+- [x] 24. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 25. Documentation and cleanup
+- [x] 25. Documentation and cleanup
   - Update main README with v2 features
   - Update us_recession_2025 README with v2 documentation
   - Document temporal decay methodology

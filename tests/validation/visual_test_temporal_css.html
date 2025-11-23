@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporal Decay CSS Visual Test</title>
+    <link rel="stylesheet" href="../web/static/css/style.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Temporal Decay CSS Visual Test</h1>
+            <p>This page demonstrates all the temporal decay CSS styles in isolation.</p>
+        </div>
+
+        <!-- Temporal Decay Section -->
+        <section class="temporal-decay-section">
+            <h2>Temporal Decay Analysis</h2>
+            <p class="section-description">
+                This model incorporates time-to-event decay, adjusting the probability based on time remaining until the forecast deadline.
+            </p>
+            
+            <!-- Probability Comparison -->
+            <div class="probability-comparison">
+                <div class="prob-item base-probability">
+                    <div class="prob-item-label">Base Probability</div>
+                    <div class="prob-item-value">45.2%</div>
+                    <div class="prob-item-description">Before temporal adjustment</div>
+                </div>
+                
+                <div class="prob-item adjusted-probability">
+                    <div class="prob-item-label">Adjusted Probability</div>
+                    <div class="prob-item-value">38.7%</div>
+                    <div class="prob-item-description">After temporal adjustment</div>
+                </div>
+                
+                <div class="prob-item">
+                    <div class="prob-item-label">Days Remaining</div>
+                    <div class="prob-item-value">402</div>
+                    <div class="prob-item-description">Until December 31, 2025</div>
+                    <span class="days-remaining">402 days until deadline</span>
+                </div>
+            </div>
+            
+            <!-- Temporal Decay Chart -->
+            <div class="decay-chart-container">
+                <h3>Probability Projection Over Time</h3>
+                <p class="chart-description">
+                    This chart shows how the probability would evolve as the deadline approaches, assuming the base probability remains constant.
+                </p>
+                <div class="chart-loading">
+                    Chart would be rendered here with Chart.js
+                </div>
+            </div>
+            
+            <!-- Temporal Metadata -->
+            <div class="decay-metadata">
+                <h3>Temporal Adjustment Details</h3>
+                <div class="metadata-grid">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Decay Method:</span>
+                        <span class="metadata-value">Exponential</span>
+                    </div>
+                    
+                    <div class="metadata-item">
+                        <span class="metadata-label">Adjustment Factor:</span>
+                        <span class="metadata-value">0.8564</span>
+                    </div>
+                    
+                    <div class="metadata-item">
+                        <span class="metadata-label">Days Remaining:</span>
+                        <span class="metadata-value">402</span>
+                    </div>
+                    
+                    <div class="metadata-item">
+                        <span class="metadata-label">Decay Rate:</span>
+                        <span class="metadata-value"><code>0.015</code></span>
+                    </div>
+                    
+                    <div class="metadata-item">
+                        <span class="metadata-label">Threshold:</span>
+                        <span class="metadata-value"><code>0.40</code></span>
+                    </div>
+                    
+                    <div class="metadata-item">
+                        <span class="metadata-label">Threshold Applied:</span>
+                        <span class="metadata-value">
+                            <span class="threshold-badge applied">Yes</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="test-header" style="margin-top: 40px;">
+            <h2>Responsive Design Test</h2>
+            <p>Resize your browser window to test responsive behavior:</p>
+            <ul>
+                <li><strong>Desktop (>1024px):</strong> Multi-column grid layouts</li>
+                <li><strong>Tablet (768px-1024px):</strong> Single column layouts, adjusted font sizes</li>
+                <li><strong>Mobile (<768px):</strong> Minimal padding, smaller fonts</li>
+            </ul>
+        </div>
+
+        <div class="test-header" style="margin-top: 20px;">
+            <h2>Hover Effects Test</h2>
+            <p>Hover over the following elements to see interactive effects:</p>
+            <ul>
+                <li>Probability cards (should lift and show shadow)</li>
+                <li>Metadata items (should show shadow and slide right)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

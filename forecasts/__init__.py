@@ -49,6 +49,56 @@ class ForecastModel(ABC):
     def get_data_sources(self) -> List[str]:
         """Return list of data sources used by this forecast"""
         pass
+    
+    def get_probability_breakdown(self, params: Optional[Dict] = None) -> Optional[Dict]:
+        """
+        Get detailed breakdown of probability calculation (optional).
+        
+        This method is optional and provides enhanced transparency into the
+        model's calculation. Models that implement this method can return
+        detailed information about their probability calculation, including
+        intermediate values, component contributions, and metadata.
+        
+        The default implementation returns None, indicating that the model
+        does not provide a detailed breakdown. Models that support this
+        feature should override this method.
+        
+        Args:
+            params: Optional parameter overrides for the calculation
+        
+        Returns:
+            Dictionary containing breakdown information, or None if not supported.
+            
+            When implemented, the dictionary should contain:
+            - base_probability (float): Core probability before adjustments
+            - adjusted_probability (float): Final probability after adjustments
+            - component_signals (Dict[str, float]): Individual component contributions
+            - metadata (Dict[str, Any]): Additional calculation metadata
+            
+            Example structure for a temporal decay model:
+            {
+                'base_probability': 0.35,
+                'adjusted_probability': 0.28,
+                'days_remaining': 120,
+                'indicator_signals': {
+                    'yield_curve': 0.65,
+                    'unemployment': 0.42,
+                    'gdp': 0.23
+                },
+                'temporal_metadata': {
+                    'decay_method': 'exponential',
+                    'decay_rate': 0.015,
+                    'adjustment_factor': 0.8
+                }
+            }
+        
+        Note:
+            This method is not abstract, so existing models that don't implement
+            it will continue to work without modification. The web interface and
+            other consumers should check if the return value is None before
+            attempting to use the breakdown data.
+        """
+        return None
 
 
 class ForecastRegistry:

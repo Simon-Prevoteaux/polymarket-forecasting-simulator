@@ -264,6 +264,207 @@ code {
     color: #95a5a6;
 }
 
+/* Temporal Decay Section */
+.temporal-decay-section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.temporal-decay-section h2 {
+    font-size: 1.5em;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.temporal-decay-section .section-description {
+    color: #7f8c8d;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* Probability Comparison Grid */
+.probability-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.prob-item {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border: 2px solid #e8f4f8;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.prob-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #3498db;
+}
+
+.prob-item.base-probability {
+    border-left: 4px solid #95a5a6;
+}
+
+.prob-item.adjusted-probability {
+    border-left: 4px solid #3498db;
+    background: linear-gradient(135deg, #e8f4f8 0%, #ffffff 100%);
+}
+
+.prob-item-label {
+    font-size: 0.95em;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.prob-item-value {
+    font-size: 3em;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.prob-item.adjusted-probability .prob-item-value {
+    color: #3498db;
+}
+
+.prob-item-description {
+    font-size: 0.85em;
+    color: #95a5a6;
+    line-height: 1.4;
+}
+
+.days-remaining {
+    display: inline-block;
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-top: 10px;
+    border: 1px solid #ffeaa7;
+}
+
+/* Decay Chart Container */
+.decay-chart-container {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+}
+
+.decay-chart-container h3 {
+    font-size: 1.2em;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.decay-chart-container canvas {
+    max-width: 100%;
+    height: 400px !important;
+    max-height: 400px;
+}
+
+.chart-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #95a5a6;
+    font-style: italic;
+}
+
+/* Decay Metadata */
+.decay-metadata {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.decay-metadata h3 {
+    font-size: 1.1em;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.metadata-item {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.metadata-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateX(2px);
+}
+
+.metadata-label {
+    font-size: 0.85em;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.metadata-value {
+    font-size: 1.1em;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.metadata-value code {
+    background-color: #e8f4f8;
+    color: #3498db;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+
+.threshold-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.threshold-badge.applied {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.threshold-badge.not-applied {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
 /* Parameters Section */
 .parameters-section {
     background-color: white;
@@ -676,6 +877,14 @@ code {
     .indicators-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
+    
+    .probability-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .metadata-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
@@ -726,6 +935,30 @@ code {
     .indicators-grid {
         grid-template-columns: 1fr;
     }
+    
+    .probability-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .prob-item-value {
+        font-size: 2.5em;
+    }
+    
+    .decay-chart-container {
+        padding: 20px;
+    }
+    
+    .decay-metadata {
+        padding: 15px;
+    }
+    
+    .metadata-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .temporal-decay-section {
+        padding: 20px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -754,5 +987,33 @@ code {
     
     .simulation-value {
         font-size: 2em;
+    }
+    
+    .temporal-decay-section {
+        padding: 15px;
+    }
+    
+    .prob-item {
+        padding: 20px;
+    }
+    
+    .prob-item-value {
+        font-size: 2em;
+    }
+    
+    .decay-chart-container {
+        padding: 15px;
+    }
+    
+    .decay-chart-container canvas {
+        min-height: 250px;
+    }
+    
+    .decay-metadata {
+        padding: 15px;
+    }
+    
+    .metadata-item {
+        padding: 12px;
     }
 }

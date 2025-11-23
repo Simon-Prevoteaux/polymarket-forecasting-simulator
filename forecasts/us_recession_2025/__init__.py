@@ -13,11 +13,14 @@ V2 enhancements include:
 - Jupyter notebook analysis suite
 """
 
-from .model import RecessionModel
+from .model import RecessionModel as RecessionModelV1
 from .model_v2 import RecessionModelV2
 from .features import FeatureEngineer
 # Import from new generic library
 from lib.temporal_adjustment import TemporalAdjuster, calculate_time_to_event
+
+# Use V2 as the default model for the web interface
+RecessionModel = RecessionModelV2
 
 # Legacy imports for backward compatibility (deprecated)
 # These are now in lib.temporal_adjustment
@@ -45,7 +48,8 @@ def sigmoid_decay_adjustment(*args, **kwargs):
 from .backtesting import BacktestEngine
 
 __all__ = [
-    'RecessionModel',
+    'RecessionModel',  # Now points to V2
+    'RecessionModelV1',  # V1 available explicitly
     'RecessionModelV2',
     'FeatureEngineer',
     'TemporalAdjuster',

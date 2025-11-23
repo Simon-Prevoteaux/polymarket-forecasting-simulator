@@ -14,6 +14,45 @@ The Polymarket Forecasting Simulator follows Nate Silver's approach to real-worl
 - **Local Persistence**: SQLite database stores historical forecasts and results
 - **Reusable Utilities**: Shared library for data fetching, probability calculations, and database operations
 - **Property-Based Testing**: Comprehensive testing using Hypothesis for correctness guarantees
+- **Historical Backtesting**: Evaluate model performance on historical data with comprehensive metrics
+- **Temporal Decay Modeling**: Time-aware probability adjustments as deadlines approach
+- **Enhanced Feature Engineering**: Derived features including rate-of-change, moving averages, and volatility
+- **Jupyter Notebook Suite**: Interactive data exploration and model analysis workflows
+- **Model Versioning**: Side-by-side comparison of model versions (v1 vs v2)
+
+## US Recession Forecast V2 Highlights
+
+The US Recession 2025 forecast now includes a comprehensive v2 model with significant enhancements:
+
+### Enhanced Data & Features
+- **12 Economic Indicators**: Added credit spreads (BAA10Y), housing starts (HOUST), manufacturing PMI, retail sales (RSXFS), oil prices (DCOILWTICO), and VIX volatility
+- **Feature Engineering**: Rate-of-change (30d, 90d, 180d), moving averages (30d, 90d), and volatility measures
+- **Missing Data Handling**: Graceful handling with forward-fill and neutral defaults
+
+### Temporal Decay Modeling
+- **Time-Aware Adjustments**: Probabilities adjust based on time remaining until December 31, 2025
+- **Multiple Decay Functions**: Exponential and sigmoid decay options
+- **Calibrated Parameters**: Empirically tuned using historical recession data
+- **Dual Probability Display**: Shows both base probability and temporally-adjusted probability
+
+### Historical Backtesting
+- **Performance Evaluation**: Run model on historical dates to assess accuracy
+- **Comprehensive Metrics**: Brier score, calibration statistics, discrimination metrics
+- **Model Comparison**: Side-by-side v1 vs v2 performance analysis
+- **Dedicated Database**: Separate table for backtest results with full metadata
+
+### Interactive Analysis
+- **5 Jupyter Notebooks**: Data exploration, indicator analysis, model comparison, backtesting results, temporal calibration
+- **Visualization Suite**: Time series plots, correlation heatmaps, calibration curves, decay projections
+- **Parameter Tuning**: Interactive parameter sensitivity analysis and optimization
+
+### Web Interface Enhancements
+- **Temporal Decay Visualization**: Chart showing probability evolution as deadline approaches
+- **Probability Breakdown**: Detailed view of base vs adjusted probabilities
+- **Days Remaining Display**: Clear countdown to forecast deadline
+- **Metadata Display**: Decay method, rate, and adjustment details
+
+See `forecasts/us_recession_2025/README.md` for complete v2 documentation.
 
 ## Project Structure
 
